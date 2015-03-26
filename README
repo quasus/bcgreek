@@ -1,12 +1,12 @@
-bcgreek
+# bcgreek
 
 A simple console utility for converting beta code to polytonic Greek.  By
 default, reads from stdin and writes to stdout.  See
 
-bcgreek -h
+    bcgreek -h
 
 for options.
 
-Now you can compile it with
+At the moment you can compile it with
 
-make bcgreek
+    make bcgreek
