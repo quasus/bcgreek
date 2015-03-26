@@ -1,4 +1,4 @@
-# bcgreek
+bcgreek
 
 A simple console utility for converting beta code to polytonic Greek.  By
 default, reads from stdin and writes to stdout.  See
@@ -10,3 +10,5 @@ for options.
 At the moment you can compile it with
 
     make bcgreek
+
+Licence: CC0.
