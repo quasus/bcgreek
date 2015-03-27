@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 /** Bit masks for modifiers.  Maybe they should all be defined as macros or as
  * constants; in both cases the readability of the declaration suffers.
@@ -726,11 +727,12 @@ char* eo_variant(int mods, char *vars[])
 
 void usage(FILE *out)
 {
-    fprintf(out, "usage: bgreek [-s] [-f input_file] [-o output_file]\n");
+    fprintf(out, "usage: bcgreek [-s] [-f input_file] [-x string] [-o output_file]\n");
     fprintf(out, "Convert beta code into polytonic Greek.\n");
     fprintf(out, "  -s                    automatically convert S into final sigma\n");
     fprintf(out, "  -f input_file         input file; if this option is missing, standard input\n");
     fprintf(out, "                          is used\n");
+    fprintf(out, "  -x string             process string\n");
     fprintf(out, "  -o output_file        output file; if this option is missing, standard\n");
     fprintf(out, "                          output is used\n");
     fprintf(out, "  -h                    display this help and exit\n");
@@ -745,10 +747,12 @@ int main(int argc, char *argv[])
     int sflag = 0;
     int fflag = 0;
     int oflag = 0;
+    int xflag = 0;
     char *fvalue;
     char *ovalue;
+    char *xvalue;
 
-    while ((oc = getopt(argc, argv, "sf:o:h")) != -1) {
+    while ((oc = getopt(argc, argv, "sf:o:hx:")) != -1) {
         switch (oc) {
             case 's':
                 sflag = 1;
@@ -760,6 +764,10 @@ int main(int argc, char *argv[])
             case 'o':
                 oflag = 1;
                 ovalue = optarg;
+                break;
+            case 'x':
+                xflag = 1;
+                xvalue = optarg;
                 break;
             case 'h':
                 usage(stdout);
@@ -777,15 +785,25 @@ int main(int argc, char *argv[])
 
     if (sflag) smart_sigma = 1;
 
+    // Input from stdin, from a file, or from a string.
+    
+    in = stdin;
+
+    // Before any stream is open, make sure fflag and xflag are not set
+    // simultaneously.
     if (fflag) {
+        if (xflag) {
+            fprintf(stderr, "%s: You can't use the -x and -f options simultaneously.\n", argv[0]);
+            exit(1);
+        }
         in = fopen(fvalue, "r");
         if (!in) {
             fprintf(stderr, "Cannot read from file %s.\n", fvalue);
             exit(1);
         }
-    } else {
-        in = stdin;
     }
+
+    if (xflag) in = fmemopen(xvalue, strlen(xvalue), "r");
 
     if (oflag) {
         out = fopen(ovalue, "w");
@@ -798,6 +816,8 @@ int main(int argc, char *argv[])
     }
 
     convert(in, out);
+
+    if (xflag) putc('\n', out);
 
     fclose(in);
     fclose(out);
